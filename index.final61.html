@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SmartBank AI — AI-powered loan eligibility, credit score, EMI and financial guidance platform.">
+  <title>SmartBank AI | AI Loan Eligibility Checker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #060913;
+      --bg-2: #0b1020;
+      --surface: rgba(15, 23, 42, 0.66);
+      --surface-2: rgba(18, 28, 52, 0.78);
+      --surface-3: rgba(255,255,255,0.055);
+      --line: rgba(148, 163, 184, 0.14);
+      --line-strong: rgba(99, 102, 241, 0.34);
+      --text: #f8fafc;
+      --muted: #aab4c8;
+      --muted-2: #74809a;
+      --primary: #7c5cff;
+      --primary-2: #3b82f6;
+      --cyan: #22d3ee;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --shadow: 0 24px 70px rgba(0,0,0,.38);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --container: 1180px;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f7fb;
+      --bg-2: #edf2fb;
+      --surface: rgba(255,255,255,.72);
+      --surface-2: rgba(255,255,255,.90);
+      --surface-3: rgba(15,23,42,.035);
+      --line: rgba(15,23,42,.08);
+      --line-strong: rgba(99,102,241,.22);
+      --text: #101827;
+      --muted: #5c6980;
+      --muted-2: #7a869c;
+      --shadow: 0 24px 60px rgba(51,65,85,.14);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(124,92,255,.18), transparent 34%),
+        radial-gradient(circle at 85% 14%, rgba(34,211,238,.11), transparent 28%),
+        linear-gradient(160deg, var(--bg), var(--bg-2));
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: .25s ease;
+    }
+
+    body::before {
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 72%);
+      z-index: -1;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .container {
+      width: min(var(--container), calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .glass {
+      background: linear-gradient(145deg, var(--surface-2), var(--surface));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(6, 9, 19, .76);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    [data-theme="light"] .navbar { background: rgba(245,247,251,.8); }
+
+    .nav-inner {
+      height: 72px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: max-content;
+    }
+
+    .brand-mark {
+      width: 42px; height: 42px; border-radius: 13px;
+      display:grid; place-items:center;
+      background: linear-gradient(145deg, var(--primary), var(--primary-2));
+      box-shadow: 0 10px 30px rgba(124,92,255,.28);
+      color:white;
+      font-size: 17px;
+    }
+
+    .brand-copy strong {
+      display:block;
+      font: 800 17px Manrope, sans-serif;
+      letter-spacing: -.02em;
+    }
+    .brand-copy span {
+      display:block;
+      color: var(--muted-2);
+      font: 10px "Space Mono", monospace;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nav-menu {
+      display:flex; align-items:center; gap: 6px; list-style:none; padding:0; margin:0;
+    }
+
+    .nav-link {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      color: var(--muted);
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 600;
+      transition:.2s ease;
+    }
+    .nav-link:hover, .nav-link.active { color: var(--text); background: var(--surface-3); }
+
+    .nav-actions { display:flex; align-items:center; gap:8px; }
+    .icon-btn {
+      width:40px; height:40px; border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--surface-3);
+      color:var(--muted);
+      display:grid; place-items:center;
+      transition:.2s ease;
+    }
+    .icon-btn:hover { color:var(--text); border-color:var(--line-strong); transform:translateY(-1px); }
+
+    .mobile-toggle { display:none; }
+
+    .hero {
+      padding: 82px 0 44px;
+      position:relative;
+    }
+
+    .hero-grid {
+      display:grid;
+      grid-template-columns: 1.18fr .82fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px;
+      border:1px solid rgba(124,92,255,.30);
+      background: rgba(124,92,255,.10);
+      color:#c8bcff;
+      border-radius:999px;
+      font: 11px "Space Mono", monospace;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+
+    [data-theme="light"] .eyebrow { color:#6149e8; }
+
+    .hero h1 {
+      margin: 18px 0 12px;
+      font: 800 clamp(42px, 6vw, 72px)/.98 Manrope, sans-serif;
+      letter-spacing:-.055em;
+      max-width: 760px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(110deg,#fff 8%,#b9adff 45%,#5ddcff 90%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    [data-theme="light"] .gradient-text {
+      background:linear-gradient(110deg,#111827 8%,#5a43dd 45%,#0891b2 90%);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+
+    .hero-subtitle {
+      color:#aeb9cc;
+      font-size:18px;
+      font-weight:600;
+      margin:0 0 14px;
+    }
+
+    [data-theme="light"] .hero-subtitle { color:#4e5a70; }
+
+    .hero-description {
+      max-width: 720px;
+      color: var(--muted);
+      line-height:1.8;
+      font-size:15px;
+      margin:0;
+    }
+
+    .hero-actions {
+      display:flex; flex-wrap:wrap; gap:10px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:9px;
+      border:none; border-radius:13px;
+      padding: 12px 17px;
+      font-weight:700; font-size:13px;
+      transition:.2s ease;
+      min-height:46px;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));
+      box-shadow: 0 14px 30px rgba(82,70,229,.25);
+    }
+    .btn-secondary { color:var(--text); background:var(--surface-3); border:1px solid var(--line); }
+    .btn-danger { color:#fecaca; background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.20); }
+    .btn-small { min-height:38px; padding:9px 12px; font-size:12px; }
+
+    .engine-card {
+      padding: 18px;
+      border-radius: var(--radius);
+      display:flex; flex-direction:column;
+      justify-content:space-between;
+      overflow:hidden;
+      position:relative;
+    }
+    .engine-card::after {
+      content:"";
+      position:absolute; width:190px; height:190px; border-radius:50%;
+      top:-80px; right:-40px;
+      background: radial-gradient(circle, rgba(34,211,238,.22), transparent 68%);
+    }
+
+    .engine-top { display:flex; justify-content:space-between; gap:15px; align-items:flex-start; }
+    .engine-title { display:flex; gap:11px; align-items:center; }
+    .engine-logo {
+      width:45px; height:45px; border-radius:14px;
+      display:grid; place-items:center;
+      background:rgba(34,211,238,.11);
+      border:1px solid rgba(34,211,238,.22);
+      color:var(--cyan);
+    }
+    .engine-title strong { display:block; font:700 15px Manrope, sans-serif; }
+    .engine-title span { display:block; margin-top:3px; color:var(--muted-2); font-size:11px; }
+    .status {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:7px 9px; border-radius:999px;
+      background:rgba(34,197,94,.09);
+      color:#76f39c; border:1px solid rgba(34,197,94,.16);
+      font-size:10px; font-weight:800;
+      text-transform:uppercase; letter-spacing:.04em;
+    }
+    .status i { font-size:7px; }
+
+    .engine-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:8px; margin-top:18px;
+    }
+    .engine-service {
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.025);
+      padding:12px;
+      border-radius:14px;
+      color:var(--muted);
+      font-size:11px;
+      display:flex; align-items:center; gap:9px;
+    }
+    .engine-service i { color:var(--green); }
+
+    .ticker {
+      margin-top: 18px;
+      padding: 11px 13px;
+      border-radius: 13px;
+      background: rgba(0,0,0,.14);
+      border:1px solid var(--line);
+      font: 11px "Space Mono", monospace;
+      color: var(--muted);
+      overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    }
+
+    .section {
+      padding: 44px 0;
+      scroll-margin-top: 92px;
+    }
+
+    .section-head {
+      display:flex; justify-content:space-between; gap:16px; align-items:flex-end; margin-bottom:20px;
+    }
+    .section-head .kicker {
+      display:block; color:var(--primary); font: 10px "Space Mono",monospace; letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px;
+    }
+    .section-head h2 { margin:0; font:800 30px/1.1 Manrope,sans-serif; letter-spacing:-.03em; }
+    .section-head p { margin:7px 0 0; color:var(--muted); font-size:13px; max-width:700px; }
+
+    .tools-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+    }
+    .tool-card {
+      border:1px solid var(--line);
+      background:var(--surface);
+      border-radius:18px;
+      padding:18px;
+      min-height:160px;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .tool-card:hover { transform:translateY(-4px); border-color:var(--line-strong); box-shadow:0 18px 44px rgba(0,0,0,.18); }
+    .tool-icon { width:42px; height:42px; border-radius:13px; display:grid; place-items:center; color:#fff; margin-bottom:18px; background:linear-gradient(145deg,var(--primary),var(--primary-2)); }
+    .tool-card h3 { margin:0 0 8px; font:700 15px Manrope,sans-serif; }
+    .tool-card p { margin:0; color:var(--muted); line-height:1.6; font-size:11px; }
+
+    .feature {
+      padding:20px;
+      border-radius: var(--radius);
+    }
+
+    .two-col {
+      display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:16px;
+    }
+
+    .panel {
+      border:1px solid var(--line);
+      background:var(--surface-3);
+      border-radius:18px;
+      padding:20px;
+    }
+    .panel h3 {
+      margin:0 0 14px;
+      font:700 16px Manrope,sans-serif;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    .form-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .field { margin-bottom:13px; }
+    .field:last-child { margin-bottom:0; }
+    .field label { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:7px; color:var(--text); font-size:11px; font-weight:700; }
+    .required { color:#a5b4fc; }
+    .field input, .field textarea {
+      width:100%;
+      border:1px solid var(--line);
+      color:var(--text);
+      background:rgba(0,0,0,.18);
+      border-radius:13px;
+      outline:none;
+      padding:12px 13px;
+      transition:.2s ease;
+    }
+    [data-theme="light"] .field input, [data-theme="light"] .field textarea { background:rgba(255,255,255,.8); }
+    .field input:focus, .field textarea:focus { border-color:rgba(124,92,255,.60); box-shadow:0 0 0 4px rgba(124,92,255,.10); }
+    .field small { display:block; color:var(--muted-2); font-size:10px; margin-top:6px; }
+    .error { display:none; color:#fca5a5; font-size:10px; margin-top:5px; }
+    .has-error input, .has-error textarea { border-color:rgba(239,68,68,.58); }
+    .has-error .error { display:block; }
+
+    .form-actions { display:flex; gap:9px; margin-top:15px; }
+    .form-actions .btn { flex:1; }
+
+    .rules {
+      display:grid; gap:9px;
+    }
+    .rule {
+      display:flex; align-items:flex-start; gap:10px;
+      padding:11px 12px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:rgba(255,255,255,.025);
+    }
+    .rule i { margin-top:2px; color:#8b9cff; }
+    .rule strong { display:block; font-size:11px; }
+    .rule span { display:block; margin-top:3px; color:var(--muted); font-size:10px; line-height:1.5; }
+
+    .result-card {
+      border-radius:20px;
+      border:1px solid var(--line);
+      overflow:hidden;
+      background:
+        radial-gradient(circle at top right, rgba(124,92,255,.13), transparent 32%),
+        linear-gradient(140deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+    }
+    .result-top {
+      padding:18px;
+      border-bottom:1px solid var(--line);
+      display:flex; justify-content:space-between; gap:14px; align-items:flex-start;
+    }
+    .result-top h3 { margin:0; font:800 20px Manrope,sans-serif; }
+    .result-top p { margin:5px 0 0; color:var(--muted); font-size:11px; }
+    .badge {
+      padding:7px 10px; border-radius:999px; font-size:10px; font-weight:800;
+      border:1px solid var(--line);
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .badge.eligible { background:rgba(34,197,94,.11); color:#86efac; border-color:rgba(34,197,94,.2); }
+    .badge.rejected { background:rgba(239,68,68,.11); color:#fca5a5; border-color:rgba(239,68,68,.2); }
+
+    .metric-grid {
+      padding:16px;
+      display:grid; grid-template-columns:repeat(3,1fr); gap:9px;
+    }
+    .metric {
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.025);
+    }
+    .metric span { display:block; color:var(--muted-2); font-size:10px; }
+    .metric strong { display:block; margin-top:7px; font:800 19px Manrope,sans-serif; word-break:break-word; }
+    .metric .green { color:#86efac; }
+    .metric .amber { color:#fcd34d; }
+    .metric .red { color:#fca5a5; }
+
+    .conditions { padding:0 16px 16px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .condition-box { border:1px solid var(--line); border-radius:14px; padding:13px; }
+    .condition-box h4 { margin:0 0 8px; font:700 12px Manrope,sans-serif; }
+    .condition-box ul { margin:0; padding-left:18px; color:var(--muted); font-size:10px; line-height:1.75; }
+    .condition-box.pass h4 { color:#86efac; }
+    .condition-box.fail h4 { color:#fca5a5; }
+
+    .ai-box {
+      margin:0 16px 16px;
+      padding:14px;
+      border-radius:15px;
+      border:1px solid rgba(124,92,255,.22);
+      background:linear-gradient(145deg, rgba(124,92,255,.09), rgba(34,211,238,.04));
+    }
+    .ai-box h4 { margin:0 0 8px; font-size:12px; display:flex; align-items:center; gap:8px; }
+    .ai-box p { margin:0; white-space:pre-wrap; color:var(--muted); font-size:11px; line-height:1.7; }
+
+    .result-footer { padding:0 16px 16px; display:flex; gap:9px; }
+    .result-footer .btn { flex:1; }
+
+    .credit-layout {
+      display:grid; grid-template-columns:.75fr 1.25fr; gap:14px;
+    }
+
+    .score-visual {
+      min-height:320px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+    }
+    .score-ring {
+      width:190px; height:190px; border-radius:50%;
+      display:grid; place-items:center;
+      position:relative;
+      background: conic-gradient(var(--primary) 0deg, var(--primary-2) 120deg, var(--cyan) 260deg, rgba(255,255,255,.08) 260deg 360deg);
+      box-shadow:0 15px 45px rgba(34,211,238,.08);
+    }
+    .score-ring::before {
+      content:""; width:148px; height:148px; border-radius:50%;
+      background:var(--bg-2);
+      border:1px solid var(--line);
+      position:absolute;
+    }
+    [data-theme="light"] .score-ring::before { background:#edf2fb; }
+    .score-ring .score-number { position:relative; z-index:1; font:800 44px Manrope,sans-serif; }
+    .score-caption { margin-top:14px; color:var(--muted); font-size:11px; }
+    .score-label { margin-top:7px; font:800 15px Manrope,sans-serif; }
+
+    .score-meter { margin-top:16px; }
+    .meter-track { height:10px; background:rgba(148,163,184,.13); border-radius:999px; overflow:hidden; }
+    .meter-fill { width:0%; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--red),var(--amber),var(--green)); transition:width .5s ease; }
+    .meter-labels { display:flex; justify-content:space-between; color:var(--muted-2); font-size:9px; margin-top:6px; }
+
+    .recommend-list { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+    .recommend-list li { display:flex; gap:9px; padding:10px 11px; border:1px solid var(--line); border-radius:12px; color:var(--muted); font-size:10px; line-height:1.55; }
+    .recommend-list i { color:var(--primary); margin-top:2px; }
+
+    .emi-grid { display:grid; grid-template-columns:.9fr 1.1fr; gap:14px; }
+    .emi-result {
+      display:grid; grid-template-columns:1.2fr .8fr; gap:11px;
+    }
+    .big-emi {
+      padding:18px; border-radius:16px;
+      background:linear-gradient(145deg, rgba(124,92,255,.12), rgba(34,211,238,.05));
+      border:1px solid rgba(124,92,255,.20);
+    }
+    .big-emi span { color:var(--muted); font-size:10px; }
+    .big-emi strong { display:block; margin-top:8px; font:800 clamp(34px,5vw,52px) Manrope,sans-serif; letter-spacing:-.04em; }
+    .emi-mini { display:grid; gap:9px; }
+    .mini-metric { padding:13px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.02); }
+    .mini-metric span { display:block; color:var(--muted-2); font-size:9px; }
+    .mini-metric strong { display:block; margin-top:5px; font:700 15px Manrope,sans-serif; }
+
+    .tips-layout { display:grid; grid-template-columns:.8fr 1.2fr; gap:14px; }
+    textarea { resize:vertical; min-height:130px; }
+    .prompt-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+    .chip { border:1px solid var(--line); color:var(--muted); background:var(--surface-3); border-radius:999px; padding:8px 10px; font-size:10px; }
+    .chip:hover { color:var(--text); border-color:var(--line-strong); }
+    .ai-response {
+      min-height:250px; display:flex; flex-direction:column;
+      justify-content:space-between;
+    }
+    .ai-source { color:#8b9cff; font:10px "Space Mono",monospace; }
+    .ai-text { color:var(--muted); line-height:1.75; font-size:11px; white-space:pre-wrap; overflow:auto; }
+    .typing { display:inline-flex; align-items:center; gap:5px; }
+    .typing i { animation:blink 1s infinite; }
+    .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+    @keyframes blink { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+    .dashboard {
+      display:grid; grid-template-columns:repeat(6,1fr); gap:10px;
+    }
+    .dash-card { padding:16px; border-radius:16px; border:1px solid var(--line); background:var(--surface); }
+    .dash-card .ico { width:35px; height:35px; border-radius:11px; display:grid; place-items:center; background:rgba(124,92,255,.10); color:#b4a6ff; }
+    .dash-card strong { display:block; margin-top:12px; font:800 22px Manrope,sans-serif; }
+    .dash-card span { display:block; margin-top:3px; color:var(--muted-2); font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
+
+    .history-wrap { overflow:hidden; }
+    .history-tools { display:flex; gap:8px; flex-wrap:wrap; }
+    .history-list { display:grid; gap:9px; }
+    .history-item {
+      display:grid; grid-template-columns:auto 1fr auto; gap:13px; align-items:center;
+      padding:13px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--surface-3);
+    }
+    .history-icon { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:rgba(124,92,255,.11); color:#b8adff; }
+    .history-main strong { display:block; font-size:12px; }
+    .history-main span { display:block; color:var(--muted); margin-top:4px; font-size:10px; }
+    .history-time { display:block; color:var(--muted-2); font-size:9px; margin-top:4px; }
+    .history-actions { display:flex; gap:7px; }
+    .empty { text-align:center; padding:32px 12px; color:var(--muted); border:1px dashed var(--line); border-radius:15px; }
+    .empty i { font-size:25px; opacity:.5; margin-bottom:10px; }
+    .empty p { margin:0; font-size:11px; }
+
+    .tech-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .tech-card { padding:16px; border:1px solid var(--line); border-radius:15px; background:var(--surface); }
+    .tech-card h4 { margin:0 0 6px; font:700 13px Manrope,sans-serif; }
+    .tech-card p { margin:0; color:var(--muted); font-size:10px; line-height:1.6; }
+
+    .disclaimer {
+      padding:18px; border-radius:16px;
+      border:1px solid rgba(245,158,11,.20);
+      background:rgba(245,158,11,.055);
+      color:var(--muted);
+    }
+    .disclaimer h3 { margin:0 0 7px; font:700 13px Manrope,sans-serif; color:#fcd34d; }
+    .disclaimer p { margin:0; font-size:10px; line-height:1.7; }
+
+    footer { padding:26px 0 40px; border-top:1px solid var(--line); color:var(--muted-2); font-size:10px; }
+    .footer-inner { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
+
+    .toast {
+      position:fixed; right:18px; bottom:18px; z-index:3000;
+      min-width:260px; max-width:380px; padding:13px 15px;
+      border-radius:14px; border:1px solid var(--line);
+      background:rgba(12,18,32,.94); color:#fff;
+      box-shadow:0 16px 40px rgba(0,0,0,.30);
+      transform:translateY(20px); opacity:0; pointer-events:none;
+      transition:.25s ease;
+      font-size:11px;
+    }
+    [data-theme="light"] .toast { background:rgba(21,27,40,.96); }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success { border-color:rgba(34,197,94,.24); }
+    .toast.error { border-color:rgba(239,68,68,.24); }
+    .toast.info { border-color:rgba(34,211,238,.24); }
+
+    .loading {
+      position:fixed; inset:0; z-index:2500;
+      background:rgba(4,7,14,.72); backdrop-filter:blur(9px);
+      display:none; align-items:center; justify-content:center;
+    }
+    [data-theme="light"] .loading { background:rgba(245,247,251,.72); }
+    .loading-card { width:min(390px,calc(100% - 30px)); padding:24px; border-radius:20px; text-align:center; }
+    .spinner { width:52px; height:52px; border-radius:50%; border:3px solid rgba(255,255,255,.09); border-top-color:#9d8dff; animation:spin 1s linear infinite; margin:0 auto 14px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading h3 { margin:0; font:700 16px Manrope,sans-serif; }
+    .loading p { margin:7px 0 0; color:var(--muted); font-size:10px; }
+
+    .hidden { display:none !important; }
+
+    @media (max-width: 1100px) {
+      .nav-menu { display:none; position:absolute; top:72px; left:18px; right:18px; padding:10px; flex-direction:column; align-items:stretch; border:1px solid var(--line); border-radius:15px; background:var(--surface-2); box-shadow:var(--shadow); }
+      .nav-menu.open { display:flex; }
+      .nav-link { width:100%; }
+      .mobile-toggle { display:grid; }
+      .tools-grid { grid-template-columns:repeat(2,1fr); }
+      .dashboard { grid-template-columns:repeat(3,1fr); }
+      .tech-grid { grid-template-columns:repeat(2,1fr); }
+    }
+
+    @media (max-width: 860px) {
+      .hero-grid, .two-col, .credit-layout, .emi-grid, .tips-layout { grid-template-columns:1fr; }
+      .metric-grid { grid-template-columns:1fr 1fr; }
+      .conditions { grid-template-columns:1fr; }
+      .hero { padding-top:52px; }
+    }
+
+    @media (max-width: 620px) {
+      .container { width:min(var(--container),calc(100% - 24px)); }
+      .hero h1 { font-size:42px; }
+      .hero-subtitle { font-size:15px; }
+      .form-grid, .emi-result { grid-template-columns:1fr; }
+      .metric-grid { grid-template-columns:1fr; }
+      .tools-grid, .dashboard, .tech-grid { grid-template-columns:1fr; }
+      .section { padding:34px 0; }
+      .feature { padding:12px; }
+      .panel { padding:15px; }
+      .nav-actions .icon-btn:nth-child(1) { display:none; }
+      .result-top { flex-direction:column; }
+      .history-item { grid-template-columns:auto 1fr; }
+      .history-actions { grid-column:2; }
+    }
+  </style>
+</head>
+
+<body data-theme="dark">
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a class="brand" href="#home" aria-label="SmartBank AI Home">
+        <div class="brand-mark"><i class="fa-solid fa-bolt"></i></div>
+        <div class="brand-copy">
+          <strong>SmartBank AI</strong>
+          <span>AI Loan Intelligence</span>
+        </div>
+      </a>
+
+      <ul class="nav-menu" id="navMenu">
+        <li><a class="nav-link active" href="#home"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a class="nav-link" href="#eligibility"><i class="fa-solid fa-file-circle-check"></i> Loan Check</a></li>
+        <li><a class="nav-link" href="#credit"><i class="fa-solid fa-chart-line"></i> Credit</a></li>
+        <li><a class="nav-link" href="#emi"><i class="fa-solid fa-calculator"></i> EMI</a></li>
+        <li><a class="nav-link" href="#tips"><i class="fa-solid fa-sparkles"></i> AI Tips</a></li>
+        <li><a class="nav-link" href="#history"><i class="fa-solid fa-clock-rotate-left"></i> History</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle theme"><i class="fa-solid fa-sun"></i></button>
+        <button class="icon-btn mobile-toggle" id="navToggle" aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <header id="home" class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow"><i class="fa-solid fa-microchip"></i> BFSI • AI FINANCE PLATFORM</span>
+        <h1><span class="gradient-text">Make smarter</span><br>loan decisions.</h1>
+        <p class="hero-subtitle">AI-Powered BFSI Financial Decision Assistant</p>
+        <p class="hero-description">
+          One seamless workspace for loan eligibility analysis, credit score evaluation, EMI planning and personalized financial guidance — built for fast, transparent decisions.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#eligibility"><i class="fa-solid fa-bolt"></i> Check Loan Eligibility</a>
+          <a class="btn btn-secondary" href="#emi"><i class="fa-solid fa-calculator"></i> Calculate EMI</a>
+        </div>
+      </div>
+
+      <div class="engine-card glass">
+        <div>
+          <div class="engine-top">
+            <div class="engine-title">
+              <div class="engine-logo"><i class="fa-solid fa-brain"></i></div>
+              <div>
+                <strong>AI Financial Engine</strong>
+                <span>Real-time analysis layer</span>
+              </div>
+            </div>
+            <span class="status"><i class="fa-solid fa-circle"></i> Active</span>
+          </div>
+
+          <div class="engine-grid">
+            <div class="engine-service"><i class="fa-solid fa-circle-check"></i> Loan Analysis</div>
+            <div class="engine-service"><i class="fa-solid fa-circle-check"></i> Credit Analysis</div>
+            <div class="engine-service"><i class="fa-solid fa-circle-check"></i> EMI Engine</div>
+            <div class="engine-service"><i class="fa-solid fa-circle-check"></i> AI Advisor</div>
+          </div>
+        </div>
+        <div class="ticker">SYSTEM READY • deterministic rules + AI reasoning + local fallback</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="toolsTitle">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="kicker">Core capabilities</span>
+          <h2 id="toolsTitle">Four tools. One financial workspace.</h2>
+          <p>Every required module is available from the same interface, without leaving the page.</p>
+        </div>
+      </div>
+
+      <div class="tools-grid">
+        <div class="tool-card" data-scroll="#eligibility">
+          <div class="tool-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+          <h3>Loan Eligibility</h3>
+          <p>Check eligibility against the required salary, credit score, EMI and age rules.</p>
+        </div>
+        <div class="tool-card" data-scroll="#credit">
+          <div class="tool-icon"><i class="fa-solid fa-gauge-high"></i></div>
+          <h3>Credit Score Analyzer</h3>
+          <p>Classify a 300–900 score as Poor, Good or Excellent with practical guidance.</p>
+        </div>
+        <div class="tool-card" data-scroll="#emi">
+          <div class="tool-icon"><i class="fa-solid fa-calculator"></i></div>
+          <h3>EMI Calculator</h3>
+          <p>Calculate monthly EMI, total interest and total payment with the standard formula.</p>
+        </div>
+        <div class="tool-card" data-scroll="#tips">
+          <div class="tool-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <h3>AI Financial Tips</h3>
+          <p>Ask questions and receive contextual advice from the AI backend or local fallback.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section id="eligibility" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Primary module</span>
+            <h2>Loan Eligibility Checker</h2>
+            <p>Enter the required applicant details. Eligibility is calculated by deterministic rules first; AI adds explanation and guidance.</p>
+          </div>
+        </div>
+
+        <div class="feature glass">
+          <div class="two-col">
+            <div class="panel">
+              <h3><i class="fa-solid fa-user-check"></i> Applicant profile</h3>
+              <form id="eligibilityForm" novalidate>
+                <div class="field">
+                  <label for="name">Applicant Name <span class="required">*</span></label>
+                  <input id="name" name="name" type="text" autocomplete="name" placeholder="Enter your full name">
+                  <div class="error" id="nameError"></div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="salary">Monthly Salary (₹) <span class="required">*</span></label>
+                    <input id="salary" name="salary" type="number" min="0" step="1000" placeholder="e.g. 50000">
+                    <small>Must be greater than ₹30,000</small>
+                    <div class="error" id="salaryError"></div>
+                  </div>
+                  <div class="field">
+                    <label for="score">Credit Score <span class="required">*</span></label>
+                    <input id="score" name="score" type="number" min="300" max="900" placeholder="e.g. 742">
+                    <small>Range 300–900; must be greater than 700</small>
+                    <div class="error" id="scoreError"></div>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="emiInput">Existing EMI (₹) <span class="required">*</span></label>
+                    <input id="emiInput" name="emiInput" type="number" min="0" step="500" placeholder="e.g. 12000">
+                    <small>Must be less than ₹20,000</small>
+                    <div class="error" id="emiError"></div>
+                  </div>
+                  <div class="field">
+                    <label for="age">Age (Years) <span class="required">*</span></label>
+                    <input id="age" name="age" type="number" min="1" max="120" placeholder="e.g. 25">
+                    <small>Minimum 21 years required</small>
+                    <div class="error" id="ageError"></div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" id="eligibilityBtn"><i class="fa-solid fa-shield-halved"></i> Analyze Eligibility</button>
+                  <button type="button" class="btn btn-secondary" id="fillDemoBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> Demo</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="panel">
+              <h3><i class="fa-solid fa-scale-balanced"></i> Eligibility rules</h3>
+              <div class="rules">
+                <div class="rule"><i class="fa-solid fa-indian-rupee-sign"></i><div><strong>Monthly Salary</strong><span>Must be greater than ₹30,000.</span></div></div>
+                <div class="rule"><i class="fa-solid fa-gauge-high"></i><div><strong>Credit Score</strong><span>Must be greater than 700.</span></div></div>
+                <div class="rule"><i class="fa-solid fa-wallet"></i><div><strong>Existing EMI</strong><span>Must remain below ₹20,000 per month.</span></div></div>
+                <div class="rule"><i class="fa-solid fa-calendar-check"></i><div><strong>Applicant Age</strong><span>Must be at least 21 years.</span></div></div>
+                <div class="rule"><i class="fa-solid fa-calculator"></i><div><strong>Eligible Loan Amount</strong><span>When all rules pass: Monthly Salary × 20.</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="eligibilityResult" class="result-card hidden" style="margin-top:16px;">
+            <div class="result-top">
+              <div>
+                <h3 id="resultApplicantName">Applicant</h3>
+                <p id="resultSummary">Analysis completed.</p>
+              </div>
+              <span id="eligibilityStatus" class="badge">RESULT</span>
+            </div>
+
+            <div class="metric-grid">
+              <div class="metric"><span>Status</span><strong id="resultEligibility">—</strong></div>
+              <div class="metric"><span>Risk Classification</span><strong id="resultRisk">—</strong></div>
+              <div class="metric"><span>Eligible Loan Amount</span><strong id="resultLoanAmount">₹0</strong></div>
+            </div>
+
+            <div class="conditions">
+              <div class="condition-box pass">
+                <h4><i class="fa-solid fa-circle-check"></i> Passed Conditions</h4>
+                <ul id="passedConditions"></ul>
+              </div>
+              <div class="condition-box fail">
+                <h4><i class="fa-solid fa-circle-xmark"></i> Failed Conditions</h4>
+                <ul id="failedConditions"></ul>
+              </div>
+            </div>
+
+            <div class="ai-box">
+              <h4><i class="fa-solid fa-brain"></i> AI Recommendation <span id="eligibilityAiSource" class="ai-source"></span></h4>
+              <p id="aiRecommendation">Waiting for analysis…</p>
+            </div>
+
+            <div class="result-footer">
+              <button type="button" class="btn btn-secondary" id="checkAgainBtn"><i class="fa-solid fa-rotate"></i> Check Again</button>
+              <button type="button" class="btn btn-primary" id="exportCurrentBtn"><i class="fa-solid fa-download"></i> Export Result</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="credit" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Credit intelligence</span>
+            <h2>Credit Score Analyzer</h2>
+            <p>Use the specified score bands to understand your current category and practical improvement steps.</p>
+          </div>
+        </div>
+
+        <div class="feature glass">
+          <div class="credit-layout">
+            <div class="panel">
+              <h3><i class="fa-solid fa-gauge-high"></i> Analyze score</h3>
+              <form id="creditForm" novalidate>
+                <div class="field">
+                  <label for="creditScore">Credit Score <span class="required">*</span></label>
+                  <input id="creditScore" type="number" min="300" max="900" placeholder="Enter 300–900">
+                  <small>300–649 Poor • 650–749 Good • 750–900 Excellent</small>
+                  <div class="error" id="creditScoreError"></div>
+                </div>
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass-chart"></i> Analyze Score</button>
+              </form>
+            </div>
+
+            <div id="creditResult" class="panel score-visual">
+              <div class="score-ring" id="scoreRing">
+                <span class="score-number" id="scoreDisplay">0</span>
+              </div>
+              <div class="score-label" id="scoreCategory">Enter a score</div>
+              <div class="score-caption" id="scoreDescription">Your category and recommendations will appear here.</div>
+              <div class="score-meter" style="width:min(100%,430px);">
+                <div class="meter-track"><div class="meter-fill" id="progressFill"></div></div>
+                <div class="meter-labels"><span>300</span><span>650</span><span>750</span><span>900</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="scoreRecommendationsPanel" class="panel hidden" style="margin-top:14px;">
+            <h3><i class="fa-solid fa-lightbulb"></i> Recommendations</h3>
+            <ul class="recommend-list" id="scoreRecommendations"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="emi" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Repayment planning</span>
+            <h2>EMI Calculator</h2>
+            <p>Calculate monthly EMI using the standard reducing-balance formula, including zero-interest handling.</p>
+          </div>
+        </div>
+
+        <div class="feature glass">
+          <div class="emi-grid">
+            <div class="panel">
+              <h3><i class="fa-solid fa-calculator"></i> Loan inputs</h3>
+              <form id="emiForm" novalidate>
+                <div class="field">
+                  <label for="principal">Loan Amount (₹) <span class="required">*</span></label>
+                  <input id="principal" type="number" min="1" placeholder="e.g. 1000000">
+                  <div class="error" id="principalError"></div>
+                </div>
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="interest">Annual Interest Rate (%) <span class="required">*</span></label>
+                    <input id="interest" type="number" min="0" max="50" step="0.1" placeholder="e.g. 8.5">
+                    <div class="error" id="interestError"></div>
+                  </div>
+                  <div class="field">
+                    <label for="tenure">Loan Tenure (Months) <span class="required">*</span></label>
+                    <input id="tenure" type="number" min="1" max="360" step="1" placeholder="e.g. 60">
+                    <div class="error" id="tenureError"></div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" type="submit"><i class="fa-solid fa-circle-play"></i> Calculate EMI</button>
+              </form>
+            </div>
+
+            <div class="panel">
+              <h3><i class="fa-solid fa-chart-column"></i> Payment summary</h3>
+              <div id="emiEmpty" class="empty">
+                <i class="fa-solid fa-calculator"></i>
+                <p>Enter a loan amount, rate and tenure to see your EMI breakdown.</p>
+              </div>
+
+              <div id="emiResult" class="hidden">
+                <div class="emi-result">
+                  <div class="big-emi">
+                    <span>Monthly EMI</span>
+                    <strong id="monthlyEMI">₹0</strong>
+                  </div>
+                  <div class="emi-mini">
+                    <div class="mini-metric"><span>Principal</span><strong id="emiPrincipal">₹0</strong></div>
+                    <div class="mini-metric"><span>Interest Rate</span><strong id="emiRate">0%</strong></div>
+                    <div class="mini-metric"><span>Tenure</span><strong id="emiTenure">0 months</strong></div>
+                  </div>
+                </div>
+                <div class="metric-grid" style="padding:12px 0 0;">
+                  <div class="metric"><span>Total Interest</span><strong id="emiTotalInterest">₹0</strong></div>
+                  <div class="metric"><span>Total Payment</span><strong id="emiTotalPayment">₹0</strong></div>
+                  <div class="metric"><span>Formula</span><strong style="font-size:11px;">Reducing Balance</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tips" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">AI advisor</span>
+            <h2>AI Financial Tips</h2>
+            <p>Ask finance-related questions. The backend attempts AI reasoning first and automatically falls back to useful local guidance if unavailable.</p>
+          </div>
+        </div>
+
+        <div class="feature glass">
+          <div class="tips-layout">
+            <div class="panel">
+              <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Ask your question</h3>
+              <form id="tipsForm">
+                <div class="field">
+                  <label for="tipsQuestion">Your question <span class="required">*</span></label>
+                  <textarea id="tipsQuestion" placeholder="Example: How can I improve my loan eligibility?"></textarea>
+                  <div class="error" id="tipsError"></div>
+                </div>
+                <div class="prompt-chips">
+                  <button class="chip" type="button" data-prompt="How can I improve my loan eligibility?">Improve eligibility</button>
+                  <button class="chip" type="button" data-prompt="How can I improve my credit score?">Improve credit score</button>
+                  <button class="chip" type="button" data-prompt="How can I reduce my EMI burden?">Reduce EMI burden</button>
+                  <button class="chip" type="button" data-prompt="How should I choose a loan tenure?">Choose tenure</button>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Get AI Guidance</button>
+                  <button class="btn btn-secondary" type="button" id="clearTipBtn"><i class="fa-solid fa-eraser"></i> Clear</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="panel ai-response">
+              <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+                <h3 style="margin:0;"><i class="fa-solid fa-brain"></i> AI Response</h3>
+                <span id="aiSource" class="ai-source">Local fallback ready</span>
+              </div>
+              <div id="tipContent" class="ai-text" style="margin-top:14px;">
+Ask a question to get personalized financial guidance.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analytics" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Personal analytics</span>
+            <h2>Financial Dashboard</h2>
+            <p>Live statistics from your local analysis history.</p>
+          </div>
+        </div>
+
+        <div class="dashboard">
+          <div class="dash-card"><div class="ico"><i class="fa-solid fa-file-circle-check"></i></div><strong id="totalChecks">0</strong><span>Total Checks</span></div>
+          <div class="dash-card"><div class="ico"><i class="fa-solid fa-circle-check"></i></div><strong id="eligibleCount">0</strong><span>Eligible</span></div>
+          <div class="dash-card"><div class="ico"><i class="fa-solid fa-circle-xmark"></i></div><strong id="ineligibleCount">0</strong><span>Not Eligible</span></div>
+          <div class="dash-card"><div class="ico"><i class="fa-solid fa-gauge"></i></div><strong id="avgScore">0</strong><span>Avg Credit Score</span></div>
+          <div class="dash-card"><div class="ico"><i class="fa-solid fa-indian-rupee-sign"></i></div><strong id="avgLoan">₹0</strong><span>Avg Loan Amount</span></div>
+          <div class="dash-card"><div class="ico"><i class="fa-solid fa-calculator"></i></div><strong id="avgEMI">₹0</strong><span>Avg EMI</span></div>
+        </div>
+
+        <div class="feature glass" style="margin-top:14px;">
+          <div style="height:290px;"><canvas id="eligibilityChart" aria-label="Eligibility distribution chart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="history" class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Persistence</span>
+            <h2>Analysis History</h2>
+            <p>Saved locally in your browser. Backend/Google Sheets persistence can be added without changing the UI.</p>
+          </div>
+          <div class="history-tools">
+            <button class="btn btn-secondary btn-small" id="exportHistoryBtn"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button class="btn btn-danger btn-small" id="clearHistoryBtn"><i class="fa-solid fa-trash"></i> Clear All</button>
+          </div>
+        </div>
+
+        <div class="history-wrap glass" style="padding:14px;">
+          <div id="historyContainer"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Implementation</span>
+            <h2>AI & Technology</h2>
+            <p>The interface is designed around the required technology and integration model.</p>
+          </div>
+        </div>
+
+        <div class="tech-grid">
+          <div class="tech-card"><h4>Claude AI</h4><p>Primary AI provider for contextual financial reasoning when a secure backend endpoint is configured.</p></div>
+          <div class="tech-card"><h4>Groq Compatible</h4><p>Backend can expose the same AI endpoint using a Groq/OpenAI-compatible provider without changing the frontend.</p></div>
+          <div class="tech-card"><h4>Flask Backend</h4><p>Recommended secure API layer for AI calls, validation, and server-side integration.</p></div>
+          <div class="tech-card"><h4>Google Sheets</h4><p>Optional persistence via a Google Apps Script web endpoint, with local storage as a fallback.</p></div>
+        </div>
+
+        <div class="disclaimer" style="margin-top:14px;">
+          <h3><i class="fa-solid fa-triangle-exclamation"></i> Important disclaimer</h3>
+          <p>This tool provides an educational financial assessment based on the information entered. It does not guarantee loan approval and does not replace a bank’s official underwriting process or professional financial advice. Eligibility is determined by the project’s specified rules and should not be treated as an actual lending decision.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 SmartBank AI • AI Loan Eligibility Checker</span>
+      <span><i class="fa-solid fa-lock"></i> API secrets belong in backend environment variables.</span>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+  <div id="loading" class="loading">
+    <div class="loading-card glass">
+      <div class="spinner"></div>
+      <h3 id="loadingTitle">Analyzing financial profile</h3>
+      <p id="loadingMessage">Running validation and preparing your result…</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const money = (value) => new Intl.NumberFormat("en-IN", { style:"currency", currency:"INR", maximumFractionDigits:0 }).format(Number(value) || 0);
+    const number = (value) => new Intl.NumberFormat("en-IN", { maximumFractionDigits:0 }).format(Number(value) || 0);
+    const STORAGE_KEY = "smartbank_ai_loan_history_v2";
+    let latestEligibility = null;
+    let chart = null;
+
+    const toast = (msg, type="info") => {
+      const el = $("toast");
+      el.textContent = msg;
+      el.className = "toast " + type;
+      requestAnimationFrame(() => el.classList.add("show"));
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+    };
+
+    const setLoading = (show, title="Analyzing financial profile", message="Running validation and preparing your result…") => {
+      $("loading").style.display = show ? "flex" : "none";
+      $("loadingTitle").textContent = title;
+      $("loadingMessage").textContent = message;
+    };
+
+    const esc = (value) => String(value ?? "").replace(/[&<>"']/g, s => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[s]));
+
+    function getHistory() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistory(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(0, 50)));
+      renderHistory();
+      updateDashboard();
+    }
+
+    function addHistory(item) {
+      const items = getHistory();
+      items.unshift(item);
+      saveHistory(items);
+    }
+
+    function clearFieldError(id) {
+      const el = $(id);
+      if (!el) return;
+      const field = el.closest(".field");
+      if (field) field.classList.remove("has-error");
+      el.textContent = "";
+    }
+
+    function setFieldError(inputId, errorId, message) {
+      const input = $(inputId);
+      const err = $(errorId);
+      const field = input?.closest(".field");
+      if (field) field.classList.add("has-error");
+      if (err) err.textContent = message;
+      return false;
+    }
+
+    function validateEligibility(data) {
+      let ok = true;
+      ["name","salary","score","emiInput","age"].forEach(clearFieldError);
+
+      const name = String(data.name || "").trim();
+      const salary = Number(data.salary);
+      const score = Number(data.score);
+      const emi = Number(data.emiInput);
+      const age = Number(data.age);
+
+      if (name.length < 2) ok = setFieldError("name","nameError","Enter a valid applicant name.") && ok;
+      if (!Number.isFinite(salary) || salary <= 0) ok = setFieldError("salary","salaryError","Enter a valid monthly salary.") && ok;
+      if (!Number.isFinite(score) || score < 300 || score > 900) ok = setFieldError("score","scoreError","Credit score must be between 300 and 900.") && ok;
+      if (!Number.isFinite(emi) || emi < 0) ok = setFieldError("emiInput","emiError","Existing EMI cannot be negative.") && ok;
+      if (!Number.isFinite(age) || age < 1 || age > 120) ok = setFieldError("age","ageError","Enter a valid applicant age.") && ok;
+
+      return ok;
+    }
+
+    function classifyRisk(salary, score, emi, age) {
+      if (score >= 750 && salary >= 50000 && emi < 10000 && age >= 25) return "Low Risk";
+      if (score > 700 && salary > 30000 && emi < 20000 && age >= 21) return "Moderate Risk";
+      return "High Risk";
+    }
+
+    async function callAI(payload) {
+      try {
+        const response = await fetch("/api/ai/analyze", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("AI endpoint unavailable");
+        const data = await response.json();
+        const text = data?.recommendation || data?.response || data?.message || data?.text;
+        if (!text) throw new Error("Empty AI response");
+        return { text, source:"AI Backend" };
+      } catch {
+        return {
+          text: localFinancialGuidance(payload),
+          source:"Local Fallback"
+        };
+      }
+    }
+
+    function localFinancialGuidance(p) {
+      const tips = [];
+      if (Number(p.salary) <= 30000) tips.push("Your monthly salary is at or below the project threshold. Increasing verified monthly income can improve eligibility.");
+      if (Number(p.credit_score) <= 700) tips.push("Your credit score is at or below the eligibility threshold. Focus on timely repayments, managing debt, and keeping credit utilization under control.");
+      if (Number(p.existing_emi) >= 20000) tips.push("Existing EMI obligations are at or above the project threshold. Reducing outstanding obligations can improve your profile.");
+      if (Number(p.age) < 21) tips.push("The project rule requires an applicant age of at least 21 years.");
+      if (!tips.length) {
+        tips.push("Your entered profile satisfies the project’s eligibility rules. Maintain timely repayments, keep debt manageable, and review the EMI before committing to a loan.");
+      }
+      return tips.join("\n\n");
+    }
+
+    async function saveToBackend(record) {
+      try {
+        await fetch("/api/sheets/save", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(record)
+        });
+      } catch {
+        // Optional backend integration; local storage remains the fallback.
+      }
+    }
+
+    async function runEligibility(e) {
+      e.preventDefault();
+
+      const data = {
+        name: $("name").value.trim(),
+        salary: $("salary").value,
+        score: $("score").value,
+        emiInput: $("emiInput").value,
+        age: $("age").value
+      };
+
+      if (!validateEligibility(data)) {
+        toast("Please fix the highlighted fields.", "error");
+        return;
+      }
+
+      const salary = Number(data.salary);
+      const score = Number(data.score);
+      const emi = Number(data.emiInput);
+      const age = Number(data.age);
+
+      const checks = [
+        { label:`Monthly salary > ₹30,000`, pass:salary > 30000, reason:"Salary must be greater than ₹30,000." },
+        { label:`Credit score > 700`, pass:score > 700, reason:"Credit score must be greater than 700." },
+        { label:`Existing EMI < ₹20,000`, pass:emi < 20000, reason:"Existing EMI must remain below ₹20,000." },
+        { label:`Applicant age ≥ 21 years`, pass:age >= 21, reason:"Applicant age must be at least 21 years." }
+      ];
+
+      const eligible = checks.every(c => c.pass);
+      const eligibleLoan = eligible ? salary * 20 : 0;
+      const risk = classifyRisk(salary, score, emi, age);
+
+      setLoading(true, "Analyzing financial profile", "Applying eligibility rules and preparing AI guidance…");
+
+      const ai = await callAI({
+        name:data.name,
+        salary,
+        credit_score:score,
+        existing_emi:emi,
+        age,
+        eligible,
+        eligible_loan_amount:eligibleLoan,
+        risk
+      });
+
+      const record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        type:"eligibility",
+        timestamp:new Date().toISOString(),
+        name:data.name,
+        salary, score, emi, age,
+        eligible,
+        risk,
+        eligibleLoan,
+        aiSource:ai.source,
+        aiRecommendation:ai.text
+      };
+
+      latestEligibility = record;
+
+      $("eligibilityResult").classList.remove("hidden");
+      $("resultApplicantName").textContent = data.name;
+      $("resultSummary").textContent = eligible
+        ? "All required project conditions are satisfied."
+        : "One or more required conditions are not satisfied.";
+
+      const badge = $("eligibilityStatus");
+      badge.textContent = eligible ? "Eligible" : "Not Eligible";
+      badge.className = "badge " + (eligible ? "eligible" : "rejected");
+
+      $("resultEligibility").textContent = eligible ? "ELIGIBLE" : "NOT ELIGIBLE";
+      $("resultEligibility").className = eligible ? "green" : "red";
+      $("resultRisk").textContent = risk;
+      $("resultRisk").className = risk === "Low Risk" ? "green" : risk === "Moderate Risk" ? "amber" : "red";
+      $("resultLoanAmount").textContent = eligible ? money(eligibleLoan) : "₹0";
+      $("resultLoanAmount").className = eligible ? "green" : "red";
+
+      $("passedConditions").innerHTML = checks.filter(c => c.pass).map(c => `<li>${esc(c.label)}</li>`).join("") || "<li>No conditions passed.</li>";
+      $("failedConditions").innerHTML = checks.filter(c => !c.pass).map(c => `<li>${esc(c.label)} — ${esc(c.reason)}</li>`).join("") || "<li>No failed conditions.</li>";
+      $("aiRecommendation").textContent = ai.text;
+      $("eligibilityAiSource").textContent = "• " + ai.source;
+
+      addHistory(record);
+      await saveToBackend(record);
+
+      setLoading(false);
+      toast(eligible ? "Eligibility analysis completed." : "Analysis completed with rule failures.", eligible ? "success" : "info");
+      $("eligibilityResult").scrollIntoView({behavior:"smooth", block:"center"});
+    }
+
+    function clearEligibilityResult() {
+      $("eligibilityResult").classList.add("hidden");
+      latestEligibility = null;
+      $("eligibilityForm").reset();
+      ["name","salary","score","emiInput","age"].forEach(clearFieldError);
+      $("name").focus();
+    }
+
+    function runCredit(e) {
+      e.preventDefault();
+      clearFieldError("creditScore");
+
+      const score = Number($("creditScore").value);
+      if (!Number.isFinite(score) || score < 300 || score > 900) {
+        setFieldError("creditScore","creditScoreError","Credit score must be between 300 and 900.");
+        toast("Enter a score from 300 to 900.", "error");
+        return;
+      }
+
+      let category, description, recs;
+      if (score >= 750) {
+        category = "EXCELLENT";
+        description = "Your score falls in the Excellent band (750–900).";
+        recs = [
+          "Continue making repayments on time.",
+          "Keep credit utilization under control.",
+          "Avoid unnecessary new credit applications.",
+          "Review your credit report periodically."
+        ];
+      } else if (score >= 650) {
+        category = "GOOD";
+        description = "Your score falls in the Good band (650–749).";
+        recs = [
+          "Maintain a consistent repayment history.",
+          "Keep existing debts manageable.",
+          "Monitor credit utilization.",
+          "Limit unnecessary new credit enquiries."
+        ];
+      } else {
+        category = "POOR";
+        description = "Your score falls in the Poor band (300–649).";
+        recs = [
+          "Prioritize timely repayments.",
+          "Work toward reducing outstanding debt.",
+          "Keep credit utilization under control.",
+          "Review your credit report for inaccuracies."
+        ];
+      }
+
+      $("scoreDisplay").textContent = score;
+      $("scoreCategory").textContent = category;
+      $("scoreDescription").textContent = description;
+      $("progressFill").style.width = `${((score-300)/600)*100}%`;
+      $("scoreRecommendations").innerHTML = recs.map(r => `<li><i class="fa-solid fa-check"></i><span>${esc(r)}</span></li>`).join("");
+      $("scoreRecommendationsPanel").classList.remove("hidden");
+
+      toast("Credit score analysis completed.", "success");
+    }
+
+    function runEMI(e) {
+      e.preventDefault();
+      ["principal","interest","tenure"].forEach(clearFieldError);
+
+      const P = Number($("principal").value);
+      const annual = Number($("interest").value);
+      const N = Number($("tenure").value);
+
+      let ok = true;
+      if (!Number.isFinite(P) || P <= 0) ok = setFieldError("principal","principalError","Enter a valid loan amount.") && ok;
+      if (!Number.isFinite(annual) || annual < 0 || annual > 50) ok = setFieldError("interest","interestError","Interest must be between 0% and 50%.") && ok;
+      if (!Number.isFinite(N) || N < 1 || N > 360) ok = setFieldError("tenure","tenureError","Tenure must be 1–360 months.") && ok;
+      if (!ok) return;
+
+      const R = annual / 12 / 100;
+      let emi;
+      if (R === 0) {
+        emi = P / N;
+      } else {
+        const pow = Math.pow(1 + R, N);
+        emi = (P * R * pow) / (pow - 1);
+      }
+
+      const totalPayment = emi * N;
+      const totalInterest = totalPayment - P;
+
+      $("emiEmpty").classList.add("hidden");
+      $("emiResult").classList.remove("hidden");
+      $("monthlyEMI").textContent = money(emi);
+      $("emiPrincipal").textContent = money(P);
+      $("emiRate").textContent = `${annual}%`;
+      $("emiTenure").textContent = `${N} months`;
+      $("emiTotalInterest").textContent = money(totalInterest);
+      $("emiTotalPayment").textContent = money(totalPayment);
+
+      const items = getHistory();
+      const maybeLast = items[0];
+      if (maybeLast?.type === "eligibility") {
+        maybeLast.emi = Math.round(emi);
+        saveHistory(items);
+      }
+
+      toast("EMI calculated successfully.", "success");
+    }
+
+    async function runTips(e) {
+      e.preventDefault();
+      const q = $("tipsQuestion").value.trim();
+      clearFieldError("tipsQuestion");
+      if (q.length < 5) {
+        setFieldError("tipsQuestion","tipsError","Please enter a meaningful financial question.");
+        toast("Please enter a financial question.", "error");
+        return;
+      }
+
+      $("aiSource").textContent = "Analyzing…";
+      $("tipContent").innerHTML = `<span class="typing">AI is preparing guidance <i class="fa-solid fa-circle"></i><i class="fa-solid fa-circle"></i><i class="fa-solid fa-circle"></i></span>`;
+
+      const ai = await callAI({ question:q, mode:"financial_tips" });
+      $("tipContent").textContent = ai.text;
+      $("aiSource").textContent = ai.source;
+      toast("Financial guidance is ready.", "success");
+    }
+
+    function renderHistory() {
+      const container = $("historyContainer");
+      const items = getHistory();
+
+      if (!items.length) {
+        container.innerHTML = `<div class="empty"><i class="fa-solid fa-inbox"></i><p>No eligibility checks yet. Start with the Loan Eligibility Checker.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="history-list">${
+        items.map(item => {
+          const status = item.eligible ? "Eligible" : "Not Eligible";
+          const icon = item.eligible ? "fa-circle-check" : "fa-circle-xmark";
+          const info = `${money(item.salary)} salary • Credit ${item.score} • Existing EMI ${money(item.emi)}`;
+          return `
+            <div class="history-item">
+              <div class="history-icon"><i class="fa-solid ${icon}"></i></div>
+              <div class="history-main">
+                <strong>${esc(item.name)}</strong>
+                <span>${esc(status)} • ${esc(item.risk)} • ${esc(info)}</span>
+                <span class="history-time">${new Date(item.timestamp).toLocaleString("en-IN")}</span>
+              </div>
+              <div class="history-actions">
+                <button class="icon-btn view-history" data-id="${esc(item.id)}" title="View result"><i class="fa-solid fa-eye"></i></button>
+                <button class="icon-btn delete-history" data-id="${esc(item.id)}" title="Delete"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+          `;
+        }).join("")
+      }</div>`;
+
+      container.querySelectorAll(".delete-history").forEach(btn => btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        saveHistory(getHistory().filter(x => x.id !== id));
+        toast("History item deleted.", "info");
+      }));
+
+      container.querySelectorAll(".view-history").forEach(btn => btn.addEventListener("click", () => {
+        const item = getHistory().find(x => x.id === btn.dataset.id);
+        if (!item) return;
+        latestEligibility = item;
+        $("resultApplicantName").textContent = item.name;
+        $("resultSummary").textContent = item.eligible ? "All required project conditions were satisfied." : "One or more required conditions were not satisfied.";
+        const badge = $("eligibilityStatus");
+        badge.textContent = item.eligible ? "Eligible" : "Not Eligible";
+        badge.className = "badge " + (item.eligible ? "eligible" : "rejected");
+        $("resultEligibility").textContent = item.eligible ? "ELIGIBLE" : "NOT ELIGIBLE";
+        $("resultRisk").textContent = item.risk;
+        $("resultLoanAmount").textContent = item.eligible ? money(item.eligibleLoan) : "₹0";
+        $("passedConditions").innerHTML = (item.eligible ? ["Monthly salary > ₹30,000","Credit score > 700","Existing EMI < ₹20,000","Applicant age ≥ 21 years"] : ["See original analysis history for failed conditions."]).map(x => `<li>${esc(x)}</li>`).join("");
+        $("failedConditions").innerHTML = item.eligible ? "<li>No failed conditions.</li>" : "<li>At least one project rule was not satisfied.</li>";
+        $("aiRecommendation").textContent = item.aiRecommendation || localFinancialGuidance(item);
+        $("eligibilityAiSource").textContent = "• " + (item.aiSource || "History");
+        $("eligibilityResult").classList.remove("hidden");
+        $("eligibility").scrollIntoView({behavior:"smooth", block:"start"});
+      }));
+    }
+
+    function updateDashboard() {
+      const items = getHistory();
+      const checks = items.filter(x => x.type === "eligibility");
+      const eligible = checks.filter(x => x.eligible);
+      const notEligible = checks.filter(x => !x.eligible);
+      const avg = arr => arr.length ? arr.reduce((s,x)=>s + Number(x||0),0) / arr.length : 0;
+
+      $("totalChecks").textContent = checks.length;
+      $("eligibleCount").textContent = eligible.length;
+      $("ineligibleCount").textContent = notEligible.length;
+      $("avgScore").textContent = number(avg(checks.map(x=>x.score)));
+      $("avgLoan").textContent = money(avg(eligible.map(x=>x.eligibleLoan)));
+      $("avgEMI").textContent = money(avg(checks.map(x=>x.emi || 0)));
+
+      const ctx = $("eligibilityChart");
+      if (!ctx || !window.Chart) return;
+      if (chart) chart.destroy();
+      const styles = getComputedStyle(document.body);
+      const textColor = styles.getPropertyValue("--muted").trim();
+      chart = new Chart(ctx, {
+        type:"doughnut",
+        data:{
+          labels:["Eligible","Not Eligible"],
+          datasets:[{
+            data:[eligible.length,notEligible.length],
+            backgroundColor:["#22c55e","#ef4444"],
+            borderWidth:0
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false, cutout:"68%",
+          plugins:{
+            legend:{position:"bottom", labels:{color:textColor, boxWidth:12, padding:18, font:{size:10}}},
+            title:{display:true,text:"Eligibility Distribution",color:textColor,font:{family:"Manrope",size:14,weight:"700"}}
+          }
+        }
+      });
+    }
+
+    function exportCurrent() {
+      if (!latestEligibility) { toast("Run an eligibility check first.", "info"); return; }
+      const rows = [
+        ["Field","Value"],
+        ["Applicant Name",latestEligibility.name],
+        ["Monthly Salary",latestEligibility.salary],
+        ["Credit Score",latestEligibility.score],
+        ["Existing EMI",latestEligibility.emi],
+        ["Age",latestEligibility.age],
+        ["Eligibility",latestEligibility.eligible ? "Eligible" : "Not Eligible"],
+        ["Risk",latestEligibility.risk],
+        ["Eligible Loan Amount",latestEligibility.eligibleLoan],
+        ["AI Source",latestEligibility.aiSource],
+        ["AI Recommendation",latestEligibility.aiRecommendation]
+      ];
+      downloadCSV(rows, "loan-eligibility-result.csv");
+    }
+
+    function downloadCSV(rows, filename) {
+      const csv = rows.map(row => row.map(v => `"${String(v ?? "").replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),500);
+    }
+
+    function exportHistory() {
+      const items = getHistory().filter(x => x.type === "eligibility");
+      if (!items.length) { toast("No history to export.", "info"); return; }
+      const rows = [
+        ["Timestamp","Applicant","Salary","Credit Score","Existing EMI","Age","Eligibility","Risk","Eligible Loan Amount","EMI"]
+      ];
+      items.forEach(x => rows.push([
+        x.timestamp,x.name,x.salary,x.score,x.emi,x.age,
+        x.eligible ? "Eligible" : "Not Eligible",x.risk,x.eligibleLoan,x.emi
+      ]));
+      downloadCSV(rows, "smartbank-ai-history.csv");
+      toast("History exported as CSV.", "success");
+    }
+
+    // Navigation
+    $("navToggle").addEventListener("click", () => $("navMenu").classList.toggle("open"));
+    document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => $("navMenu").classList.remove("open")));
+    document.querySelectorAll("[data-scroll]").forEach(card => card.addEventListener("click",()=>document.querySelector(card.dataset.scroll)?.scrollIntoView({behavior:"smooth"})));
+
+    // Theme
+    const storedTheme = localStorage.getItem("smartbank_theme") || "dark";
+    document.body.dataset.theme = storedTheme;
+    $("themeToggle").innerHTML = storedTheme === "dark" ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    $("themeToggle").addEventListener("click", () => {
+      const next = document.body.dataset.theme === "dark" ? "light" : "dark";
+      document.body.dataset.theme = next;
+      localStorage.setItem("smartbank_theme", next);
+      $("themeToggle").innerHTML = next === "dark" ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+      updateDashboard();
+    });
+
+    // Forms
+    $("eligibilityForm").addEventListener("submit", runEligibility);
+    $("creditForm").addEventListener("submit", runCredit);
+    $("emiForm").addEventListener("submit", runEMI);
+    $("tipsForm").addEventListener("submit", runTips);
+
+    $("fillDemoBtn").addEventListener("click", () => {
+      $("name").value = "Demo Applicant";
+      $("salary").value = 50000;
+      $("score").value = 742;
+      $("emiInput").value = 12000;
+      $("age").value = 25;
+      $("eligibilityForm").dispatchEvent(new Event("submit", {cancelable:true, bubbles:true}));
+    });
+
+    $("checkAgainBtn").addEventListener("click", clearEligibilityResult);
+    $("exportCurrentBtn").addEventListener("click", exportCurrent);
+    $("exportHistoryBtn").addEventListener("click", exportHistory);
+    $("clearHistoryBtn").addEventListener("click", () => {
+      if (!getHistory().length) { toast("History is already empty.", "info"); return; }
+      localStorage.removeItem(STORAGE_KEY);
+      renderHistory();
+      updateDashboard();
+      toast("All local history cleared.", "info");
+    });
+
+    $("clearTipBtn").addEventListener("click", () => {
+      $("tipsQuestion").value = "";
+      $("tipContent").textContent = "Ask a question to get personalized financial guidance.";
+      $("aiSource").textContent = "Local fallback ready";
+    });
+
+    document.querySelectorAll(".chip").forEach(chip => chip.addEventListener("click", () => {
+      $("tipsQuestion").value = chip.dataset.prompt;
+      $("tipsQuestion").focus();
+    }));
+
+    // Active navigation highlighting
+    const sections = [...document.querySelectorAll("header[id], main section[id]")];
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if (!visible) return;
+      document.querySelectorAll(".nav-link").forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + visible.target.id));
+    }, {rootMargin:"-25% 0px -60% 0px", threshold:[0,.2,.5]});
+    sections.forEach(s => observer.observe(s));
+
+    // Initial state
+    renderHistory();
+    updateDashboard();
+  </script>
+</body>
+</html>
